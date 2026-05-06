@@ -147,3 +147,8 @@ with gr.Blocks(css=UI_css) as demo:
             )
 
 demo.launch()
+
+
+
+
+# http://127.0.0.1:7870/ (url)
