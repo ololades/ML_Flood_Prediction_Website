@@ -1,14 +1,15 @@
 import gradio as gr
 import joblib
 import numpy as np
+import pandas as pd
+import folium
 import os
 
 # ---------------- CSS ----------------
 UI_css = """
 .gradio-container {
-    background-color: #f2f2f2 !important;
-    color: white;
-    max-width: 1400px !important;
+    background-color: #d9d9d9 !important;
+    max-width: 1500px !important;
 }
 
 h1 {
@@ -18,18 +19,31 @@ h1 {
 }
 
 #map-panel {
-    border: 3px solid #1e90ff;
-    border-radius: 12px;
+    border: 3px solid #ff6600;
+    border-radius: 35px;
     overflow: hidden;
-    padding: 5px;
+    padding: 55px;
 }
 
 #form-panel {
-    padding: 20px;
-    background-color: #1f1f1f;
+    padding: 2px;
+    background-color: #ff6600;
     border-radius: 12px;
+    color: white;
 }
 
+
+
+/* INPUT FIX (WHITE FIELDS) */
+#form-panel input,
+#form-panel textarea,
+#form-panel select {
+    background-color: white !important;
+    color: black !important;
+    border-radius: 6px !important;
+}
+
+/* BUTTON */
 button {
     background-color: #1e90ff !important;
     color: white !important;
@@ -37,13 +51,23 @@ button {
 }
 """
 
-# ---------------- Load model safely ----------------
-MODEL_PATH = "model_pkl/RF_model.pkl"
+# ---------------- Load model ----------------
+MODEL_PATH = "model_pkl/RandomForest_model.pkl"
 
 if not os.path.exists(MODEL_PATH):
     raise FileNotFoundError(f"Model not found at: {MODEL_PATH}")
 
 model = joblib.load(MODEL_PATH)
+
+def default_map():
+    m = folium.Map(
+        location=[9, 8],   # center of Nigeria
+        zoom_start=5,
+        tiles="CartoDB positron"
+    )
+    return m._repr_html_()
+default_map_html = default_map()
+
 
 # ---------------- Encoders ----------------
 soil_map = {
@@ -67,58 +91,91 @@ landuse_map = {
     "Crops": 4
 }
 
-# ---------------- Prediction function ----------------
-def predict_flood(elevation, landuse, rainfall, population, soil):
 
-    # Validate inputs
-    if None in [elevation, landuse, rainfall, population, soil]:
-        return "⚠️ Please fill all fields"
+
+# ---------------- Prediction function ----------------
+def predict_flood(elevation, landuse, rainfall, population, soil, lat, lon):
+
+    if None in [elevation, landuse, rainfall, population, soil, lat, lon]:
+        return "⚠️ Please fill all fields", ""
 
     try:
+        # Convert inputs
         elevation = float(elevation)
         rainfall = float(rainfall)
         population = float(population)
+        lat = float(lat)
+        lon = float(lon)
 
         landuse_val = landuse_map.get(landuse)
         soil_val = soil_map.get(soil)
 
-        if landuse_val is None or soil_val is None:
-            return "⚠️ Invalid categorical input selected"
+        # ---------------- FIX: DataFrame (removes sklearn warning) ----------------
+        X = pd.DataFrame([{
+            "elevation": elevation,
+            "landuse": landuse_val,
+            "rainfall": rainfall,
+            "population": population,
+            "soil": soil_val
+        }])
 
-        X = np.array([[elevation, landuse_val, rainfall, population, soil_val]])
         pred = model.predict(X)[0]
 
-        return "🚨 High Flood Risk" if pred == 1 else "🟢 Low Flood Risk"
+        # ---------------- RESULT ----------------
+        if pred == 1:
+            result = "🚨 High Flood Risk"
+            color = "red"
+        else:
+            result = "🟢 Low Flood Risk"
+            color = "green"
+
+        # ---------------- MAP ----------------
+        m = folium.Map(
+            location=[lat, lon],
+            zoom_start=10,
+            tiles="CartoDB positron"
+        )
+
+        folium.CircleMarker(
+            location=[lat, lon],
+            radius=12,
+            color=color,
+            fill=True,
+            fill_color=color,
+            fill_opacity=0.8,
+            popup=result
+        ).add_to(m)
+
+        folium.Circle(
+            location=[lat, lon],
+            radius=3000,
+            color=color,
+            fill=True,
+            fill_opacity=0.2
+        ).add_to(m)
+
+        return result, m._repr_html_()
 
     except Exception as e:
-        return f"❌ Error: {str(e)}"
+        return f"❌ Error: {str(e)}", ""
 
-
-# ---------------- Map ----------------
-nigeria_map_html = """
-<iframe 
-    width="100%" 
-    height="500"
-    frameborder="0"
-    style="border:0; border-radius:12px;"
-    src="https://www.openstreetmap.org/export/embed.html?bbox=2.7,4.0,14.7,14.0&layer=mapnik">
-</iframe>
-"""
 
 # ---------------- UI ----------------
 with gr.Blocks(css=UI_css) as demo:
 
-    gr.Markdown("# 🌧️ Flood Susceptibility Prediction Dashboard")
+    gr.Markdown("# 🌧️ ML Flood Prediction System")
 
     with gr.Row():
 
+        # ---------------- MAP ----------------
         with gr.Column(scale=1, elem_id="map-panel"):
-            gr.Markdown("### 🗺️ Nigeria Study Area")
-            gr.HTML(nigeria_map_html)
+            gr.Markdown("### 🗺️ Flood Location Map")
+            map_output = gr.HTML(value=default_map_html)
 
+        # ---------------- FORM ----------------
         with gr.Column(scale=1, elem_id="form-panel"):
 
-            gr.Markdown("### 🌧️ Input Parameters")
+            gr.Markdown("### Enter Values")
 
             with gr.Row():
                 elevation = gr.Number(label="Elevation")
@@ -137,18 +194,26 @@ with gr.Blocks(css=UI_css) as demo:
                     label="Soil Type"
                 )
 
+            with gr.Row():
+                lat = gr.Number(label="Latitude")
+                lon = gr.Number(label="Longitude")
+
             btn = gr.Button("🚀 Predict Flood Risk")
             output = gr.Textbox(label="Result")
 
             btn.click(
                 predict_flood,
-                inputs=[elevation, landuse, rainfall, population, soil],
-                outputs=output
+                inputs=[
+                    elevation,
+                    landuse,
+                    rainfall,
+                    population,
+                    soil,
+                    lat,
+                    lon
+                ],
+                outputs=[output, map_output]
             )
 
+# ---------------- LAUNCH (Gradio 6 fix) ----------------
 demo.launch()
-
-
-
-
-# http://127.0.0.1:7870/ (url)
