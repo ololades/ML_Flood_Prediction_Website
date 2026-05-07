@@ -43,12 +43,6 @@ Das Projekt zeigt praktische Erfahrung in:
 
 ---
 
-## 🖥️ Vorschau der Anwendung
-
-![Application Screenshot](assets/app_overview.png)
-
----
-
 ## 🧠 Wie funktioniert die Anwendung?
 
 1. Der Benutzer gibt Umweltdaten ein  
@@ -68,5 +62,11 @@ cd flood-prediction-webapp
 pip install -r requirements.txt
 python app.py
 ```
+
+## 🖥️ Vorschau der Anwendung
+
+![Application Screenshot](assets/app_overview.png)
+
+---
 
 ---
