@@ -1,4 +1,4 @@
-# 🌐 Floodvorhersage Webanwendung
+#  Floodvorhersage Webanwendung
 
 Interaktive Webanwendung mit Machine Learning zur Vorhersage von Hochwasserrisiken mit Umwelt- und Geodaten.
 
@@ -6,13 +6,13 @@ Interaktive Webanwendung mit Machine Learning zur Vorhersage von Hochwasserrisik
 
 ---
 
-## 📌 Projektübersicht
+##  Projektübersicht
 
 Dieses Projekt ist ein webbasiertes Hochwasser-Vorhersagesystem mit Python.
 
-Die Anwendung benutzt ein trainiertes Machine-Learning-Modell aus:
+Das trainierte Machine-Learning-Modell kommt aus diesem Repository:
 
-[Model Training Repository](URL_HERE)
+[ML Flood Prediction](https://github.com/ololades/ML_Flood_Prediction)
 
 Das beste Modell ist der Random-Forest-Klassifikator. Das Modell ist hier gespeichert:
 
@@ -32,7 +32,7 @@ Das Projekt zeigt praktische Erfahrung in:
 
 ---
 
-## 🛠️ Verwendete Technologien
+##  Verwendete Technologien
 
 - Python
 - Gradio
@@ -43,7 +43,7 @@ Das Projekt zeigt praktische Erfahrung in:
 
 ---
 
-## 🧠 Wie funktioniert die Anwendung?
+##  Wie funktioniert die Anwendung?
 
 1. Der Benutzer gibt Umweltdaten ein  
 2. Der Benutzer klickt auf **Predict Flood Risk**  
@@ -54,7 +54,7 @@ Das Projekt zeigt praktische Erfahrung in:
 
 ---
 
-## 🚀 Lokal ausführen
+##  Lokal ausführen
 
 ```bash
 git clone <repo-url>
@@ -63,7 +63,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## 🖥️ Vorschau der Anwendung
+##  Vorschau der Anwendung
 
 ![Application Screenshot](assets/app_overview.png)
 
