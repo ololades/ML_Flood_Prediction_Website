@@ -1,8 +1,8 @@
 # 🌐 Floodvorhersage Webanwendung
 
-![Demo](assets/demo.gif)
-
 Interaktive Webanwendung mit Machine Learning zur Vorhersage von Hochwasserrisiken mit Umwelt- und Geodaten.
+
+![Demo](assets/demo.gif)
 
 ---
 
